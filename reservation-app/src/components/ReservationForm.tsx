@@ -1,4 +1,5 @@
 // src/components/ReservationForm.tsx
+
 export interface Room {
   id: string;
   name: string;
@@ -7,9 +8,10 @@ export interface Room {
 }
 interface Props {
   rooms: Room[];
+  userName?: string | null; // userName もpropsとして受け取ることを想定
 }
 
-export const ReservationForm = ({ rooms }: Props) => {
+export const ReservationForm = ({ rooms, userName }: Props) => {
   return (
     <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full mx-4 mt-8">
       <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
@@ -51,34 +53,50 @@ export const ReservationForm = ({ rooms }: Props) => {
             name="name"
             className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline transition duration-300 focus:border-blue-500"
             required
+            defaultValue={userName || ''} // ユーザー名をデフォルト値に設定
+          />
+        </div>
+
+        {/* ★変更点: 日付、開始時間、終了時間を個別のフィールドに分割 */}
+        <div className="mb-6">
+          <label htmlFor="booking_date" className="block text-gray-700 text-sm font-bold mb-2">
+            日付:
+          </label>
+          <input
+            type="date"
+            id="booking_date"
+            name="booking_date" // 新しいname属性
+            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline transition duration-300 focus:border-blue-500"
+            required
           />
         </div>
 
         <div className="mb-6">
-          <label htmlFor="time" className="block text-gray-700 text-sm font-bold mb-2">
+          <label htmlFor="start_time_only" className="block text-gray-700 text-sm font-bold mb-2">
             開始時間:
           </label>
           <input
-            type="datetime-local"
-            id="time"
-            name="start_time"
+            type="time"
+            id="start_time_only"
+            name="start_time_only" // 新しいname属性
             className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline transition duration-300 focus:border-blue-500"
             required
           />
         </div>
 
         <div className="mb-6">
-          <label htmlFor="end_time" className="block text-gray-700 text-sm font-bold mb-2">
+          <label htmlFor="end_time_only" className="block text-gray-700 text-sm font-bold mb-2">
             終了時間:
           </label>
           <input
-            type="datetime-local"
-            id="end_time"
-            name="end_time"
+            type="time"
+            id="end_time_only"
+            name="end_time_only" // 新しいname属性
             className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline transition duration-300 focus:border-blue-500"
             required
           />
         </div>
+        {/* ★変更点ここまで */}
 
         <div className="mb-6">
           <label htmlFor="purpose" className="block text-gray-700 text-sm font-bold mb-2">

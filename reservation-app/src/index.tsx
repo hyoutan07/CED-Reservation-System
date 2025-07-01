@@ -10,7 +10,7 @@ import { authHandler, initAuthConfig, verifyAuth } from '@hono/auth-js'
 import Google from '@auth/core/providers/google'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from './db/index.js'
-import { accounts, authenticators, rooms, sessions, users, verificationTokens } from './db/schema.js'
+import { accounts, authenticators, bookings, rooms, sessions, users, verificationTokens } from './db/schema.js'
 import { html } from 'hono/html';
 import { Welcome } from './components/Welcome.js';
 import { Layout } from './components/Layout.js';
@@ -19,6 +19,8 @@ import { ReservationForm } from './components/ReservationForm.js';
 // ★追加: モジュール化したルーターをインポート
 import roomsRouter from './routes/rooms.js';
 import bookingsRouter from './routes/bookings.js';
+import { BookingList } from './components/BookingList.js';
+import { eq } from 'drizzle-orm';
 
 const app = new Hono()
 
@@ -64,10 +66,29 @@ app.get('/', async (c) => {
   // サーバー側でデータ取得
   const allRooms = await db.select().from(rooms);
 
+  // ログインユーザーの予約情報を取得
+  let userBookings: typeof bookings.$inferSelect[] = []; // 型定義
+  if (auth && auth.session && auth.session.user && auth.session.user.id) {
+    try {
+      // ユーザーIDに基づいて予約を取得し、関連する部屋情報も同時に取得
+      userBookings = await db.query.bookings.findMany({
+        where: eq(bookings.user_id, auth.session.user.id),
+        with: {
+          room: true, // 関連する部屋情報を取得
+        },
+        orderBy: [bookings.start_time], // 開始時間でソート
+      });
+    } catch (error) {
+      console.error('Failed to fetch user bookings on server:', error);
+      // エラーが発生してもページは表示し続ける
+    }
+  }
+
   return c.html(
     <Layout title="Hono Auth Home">
       <div className="flex flex-col items-center justify-center w-full">
         <Welcome userName={auth.session?.user?.name} />
+        <BookingList userBookings={userBookings} userName={auth.session?.user?.name}/>
         <ReservationForm rooms={allRooms}/>
       </div>
     </Layout>
