@@ -6,7 +6,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "generate": "npx drizzle-kit generate",
-    "push": "npx drizzle-kit push"
+    "push": "npx drizzle-kit push",
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
@@ -16,11 +17,13 @@
     "dotenv": "^17.0.0",
     "drizzle-orm": "^0.44.2",
     "hono": "^4.8.3",
-    "mysql2": "^3.14.1"
+    "mysql2": "^3.14.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
     "@types/node": "^20.11.17",
+    "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"

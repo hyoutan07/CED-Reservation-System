@@ -5,10 +5,12 @@ import {
   mysqlTable,
   primaryKey,
   varchar,
+  mysqlEnum,
 } from "drizzle-orm/mysql-core"
 import mysql from "mysql2/promise"
 import { drizzle } from "drizzle-orm/mysql2"
 import type { AdapterAccountType } from '@auth/core/adapters'
+import { relations } from "drizzle-orm"
  
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 })
@@ -95,3 +97,36 @@ export const authenticators = mysqlTable(
     }),
   })
 )
+
+// rooms テーブル (部屋の情報)
+export const rooms = mysqlTable('rooms', {
+  id: varchar('id', { length: 255 }).notNull().primaryKey(), // 部屋のID (UUIDなどを想定)
+  name: varchar('name', { length: 255 }).notNull().unique(), // 部屋の名前 (例: 会議室A)
+  capacity: int('capacity').notNull(),                      // 部屋の収容人数
+  description: varchar('description', { length: 512 }),     // 部屋の説明
+  // 必要に応じて、部屋のタイプ、場所などのカラムを追加することもできます
+});
+
+// rooms テーブルと bookings テーブルのリレーションシップ
+export const roomsRelations = relations(rooms, ({ many }) => ({
+  bookings: many(bookings), // rooms テーブルから bookings への一対多のリレーション
+}));
+
+// bookings テーブル (予約情報)
+export const bookings = mysqlTable('bookings', {
+  id: varchar('id', { length: 255 }).notNull().primaryKey(), // 予約のID (UUIDなどを想定)
+  room_id: varchar('room_id', { length: 255 }).notNull(),   // 予約された部屋のID
+  user_id: varchar('user_id', { length: 255 }).notNull(),   // 予約したユーザーのID
+  start_time: timestamp('start_time', { mode: 'date' }).notNull(), // 予約開始日時
+  end_time: timestamp('end_time', { mode: 'date' }).notNull(),     // 予約終了日時
+  purpose: varchar('purpose', { length: 255 }),             // 予約の目的
+  status: mysqlEnum('status', ['confirmed', 'pending', 'cancelled']).default('pending').notNull(), // 予約の状態
+  created_at: timestamp('created_at').defaultNow().notNull(), // レコード作成日時
+  updated_at: timestamp('updated_at').defaultNow().onUpdateNow().notNull(), // レコード最終更新日時
+});
+
+// bookings テーブルと他のテーブルのリレーションシップ
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  room: one(rooms, { fields: [bookings.room_id], references: [rooms.id] }), // bookings から rooms への多対一のリレーション
+  user: one(users, { fields: [bookings.user_id], references: [users.id] }), // bookings から users への多対一のリレーション
+}));
