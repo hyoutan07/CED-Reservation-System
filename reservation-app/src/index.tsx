@@ -10,7 +10,7 @@ import { authHandler, initAuthConfig, verifyAuth } from '@hono/auth-js'
 import Google from '@auth/core/providers/google'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from './db/index.js'
-import { accounts, authenticators, sessions, users, verificationTokens } from './db/schema.js'
+import { accounts, authenticators, rooms, sessions, users, verificationTokens } from './db/schema.js'
 import { html } from 'hono/html';
 import { Welcome } from './components/Welcome.js';
 import { Layout } from './components/Layout.js';
@@ -18,7 +18,7 @@ import { ReservationForm } from './components/ReservationForm.js';
 
 // ★追加: モジュール化したルーターをインポート
 import roomsRouter from './routes/rooms.js';
-import { render } from 'hono/jsx/dom';
+import bookingsRouter from './routes/bookings.js';
 
 const app = new Hono()
 
@@ -55,16 +55,20 @@ app.use('*', verifyAuth())
 
 // ★追加: モジュール化したルーターをHonoアプリケーションに登録
 app.route('/api/rooms', roomsRouter);
+app.route('/api/bookings', bookingsRouter)
 
 // ルート (GET /) : Welcomeメッセージと予約フォームを表示
-app.get('/', (c) => {
+app.get('/', async (c) => {
   const auth = c.get('authUser');
+
+  // サーバー側でデータ取得
+  const allRooms = await db.select().from(rooms);
 
   return c.html(
     <Layout title="Hono Auth Home">
       <div className="flex flex-col items-center justify-center w-full">
         <Welcome userName={auth.session?.user?.name} />
-        <ReservationForm />
+        <ReservationForm rooms={allRooms}/>
       </div>
     </Layout>
   );
