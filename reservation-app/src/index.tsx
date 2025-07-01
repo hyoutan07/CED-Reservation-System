@@ -9,6 +9,9 @@ import Google from '@auth/core/providers/google'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from './db/index.js'
 import { accounts, authenticators, sessions, users, verificationTokens } from './db/schema.js'
+import { Welcome } from './components/Welcome.js';
+import { Layout } from './components/Layout.js';
+import { ReservationForm } from './components/ReservationForm.js';
 
 
 
@@ -48,7 +51,12 @@ app.use('*', verifyAuth())
 app.get('/', (c) => {
   const auth = c.get('authUser')
 
-  return c.text(`Hello, ${auth.session.user?.name}`)
+  return c.html(
+    <Layout title="Hono Auth Home">
+      <Welcome userName={auth.session?.user?.name} />
+      <ReservationForm />
+    </Layout>
+  );
 })
 
 const port = 3000

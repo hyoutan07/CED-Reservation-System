@@ -2,7 +2,7 @@
   "name": "reservation-app",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/index.tsx",
     "build": "tsc",
     "start": "node dist/index.js",
     "generate": "npx drizzle-kit generate",
