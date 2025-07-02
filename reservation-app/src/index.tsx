@@ -36,9 +36,27 @@ app.use(
       sessionsTable: sessions,
       verificationTokensTable: verificationTokens,
       authenticatorsTable: authenticators,
-    })
-  }))
-)
+    }),
+    callbacks: {
+      async signIn({ account, profile }) {
+        // profile オブジェクトには、Google から提供されるユーザーの情報が含まれています。
+        // Google Workspace アカウントの場合、profile.hd にはホストされているドメインが含まれます。
+        // production 環境では 'your-school.ac.jp' をあなたの学校の実際のドメインに置き換えてください。
+        const allowedDomain = 'gl.cc.uec.ac.jp'; // ここをあなたの学校のドメインに置き換える！
+
+        if (profile?.hd === allowedDomain) {
+          console.log(`User ${profile.email} from ${profile.hd} allowed.`);
+          return true; // ログインを許可
+        } else {
+          console.warn(`User ${profile?.email} from ${profile?.hd} (or no domain) denied.`);
+          // ログインを拒否し、ユーザーを別のページにリダイレクトすることも可能です。
+          // return '/unauthorized'; // 例えば、アクセス拒否ページにリダイレクト
+          return false; // ログインを拒否
+        }
+      }
+    }
+  })
+))
 
 app.onError((err, c) => {
   if (err instanceof HTTPException && err.status === 401) {
