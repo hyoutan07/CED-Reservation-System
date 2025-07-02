@@ -15,12 +15,11 @@ import { html } from 'hono/html';
 import { Welcome } from './components/Welcome.js';
 import { Layout } from './components/Layout.js';
 import { ReservationForm } from './components/ReservationForm.js';
-
-// ★追加: モジュール化したルーターをインポート
 import roomsRouter from './routes/rooms.js';
 import bookingsRouter from './routes/bookings.js';
 import { BookingList } from './components/BookingList.js';
 import { eq } from 'drizzle-orm';
+import { MessageDisplay } from './components/MessageDisplay.js';
 
 const app = new Hono()
 
@@ -32,12 +31,12 @@ app.use(
       Google,
     ],
     adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-    authenticatorsTable: authenticators,
-  })
+      usersTable: users,
+      accountsTable: accounts,
+      sessionsTable: sessions,
+      verificationTokensTable: verificationTokens,
+      authenticatorsTable: authenticators,
+    })
   }))
 )
 
@@ -66,6 +65,9 @@ app.get('/', async (c) => {
   // サーバー側でデータ取得
   const allRooms = await db.select().from(rooms);
 
+  const errorParam = c.req.query('error');
+  const successParam = c.req.query('success');
+
   // ログインユーザーの予約情報を取得
   let userBookings: typeof bookings.$inferSelect[] = []; // 型定義
   if (auth && auth.session && auth.session.user && auth.session.user.id) {
@@ -88,8 +90,10 @@ app.get('/', async (c) => {
     <Layout title="Hono Auth Home">
       <div className="flex flex-col items-center justify-center w-full">
         <Welcome userName={auth.session?.user?.name} />
-        <BookingList userBookings={userBookings} userName={auth.session?.user?.name}/>
-        <ReservationForm rooms={allRooms}/>
+        {errorParam && <MessageDisplay type="error" message={errorParam} />}
+        {successParam && <MessageDisplay type="success" message={successParam} />}
+        <BookingList userBookings={userBookings} userName={auth.session?.user?.name} />
+        <ReservationForm rooms={allRooms} />
       </div>
     </Layout>
   );

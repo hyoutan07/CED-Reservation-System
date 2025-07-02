@@ -17,6 +17,7 @@ const poolConnection = mysql.createPool({
   user: process.env.DB_USER || 'user',                // .envから読み込む
   password: process.env.DB_PASSWORD || 'password',        // .envから読み込む
   database: process.env.DB_DATABASE || 'my_app_db',       // .envから読み込む
+  timezone: "Z"
 });
 
 export const db = drizzle(poolConnection, { schema, mode: "default" });

@@ -1,22 +1,23 @@
 # docker-compose.yml
-version: '3.8' # Docker Composeファイルのバージョン。最新の推奨バージョンを使用します。
+version: '3.8'
 
 services:
-  db: # サービス名。アプリケーションからこの名前でDBにアクセスできます。
-    image: mysql:8.0 # 使用するMySQLのDockerイメージとそのバージョン
-    container_name: reservation-db # Dockerコンテナに分かりやすい名前を付けます
+  db:
+    image: mysql:8.0
+    container_name: reservation-db
     ports:
-      - "3306:3306" # ホストの3306番ポートをコンテナの3306番ポートにマッピングします
-    environment: # コンテナ内で利用する環境変数を設定します
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # .env から読み込む
-      MYSQL_DATABASE: ${MYSQL_DATABASE}         # .env から読み込む
-      MYSQL_USER: ${MYSQL_USER}                  # .env から読み込む
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}          # .env から読み込む
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # ここにコマンドを追加
+    command: --default-time-zone='+00:00' # MySQLのデフォルトタイムゾーンをUTCに設定
     volumes:
-      - db_data:/var/lib/mysql # データを永続化するためのボリューム設定
-                               # これがないと、コンテナを削除するたびにデータが消えてしまいます
-    restart: always # コンテナが終了した場合、常に再起動します（開発中は必要に応じて調整）
+      - db_data:/var/lib/mysql
+    restart: always
 
 volumes:
-  db_data: # db_data という名前のボリュームを定義します
-    driver: local # ローカルストレージを使用します
+  db_data:
+    driver: local
